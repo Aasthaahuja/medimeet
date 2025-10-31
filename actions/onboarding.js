@@ -15,11 +15,20 @@ export async function setUserRole(formData) {
   }
 
   // Find user in our database
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  let user = await prisma.user.findUnique({
+  where: { clerkId: userId },
+});
 
-  if (!user) throw new Error("User not found in database");
+// Create the user in DB if not found
+if (!user) {
+  user = await prisma.user.create({
+    data: {
+      clerkId: userId,
+      email: clerkUser?.emailAddresses?.[0]?.emailAddress || "",
+      name: `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`,
+    },
+  });
+}
 
   const role = formData.get("role");
 
